@@ -52,8 +52,11 @@ A verificação é feita a cada 60 segundos, garantindo acompanhamento em tempo 
 └── README.md
 
 ## ✅ **Permissões requeridas**
+
 activeTab
+
 storage
+
 notifications
 
 Acesso ao site onde os chamados são exibidos (via content_scripts)
