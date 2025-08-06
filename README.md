@@ -42,9 +42,13 @@ A verificação é feita a cada 60 segundos, garantindo acompanhamento em tempo 
 
 ## 📁 **Estrutura do Projeto**
 ├── manifest.json
+
 ├── content.js
+
 ├── icon.png
+
 ├── popup.html
+
 └── README.md
 
 ## ✅ **Permissões requeridas**
