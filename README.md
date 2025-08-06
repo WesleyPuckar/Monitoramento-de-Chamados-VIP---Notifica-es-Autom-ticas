@@ -30,7 +30,7 @@ Esta extensão para Google Chrome monitora automaticamente uma interface web de 
 
  A extensão será adicionada as extensões do chrome, sendo necessário acessar o ícone dela e clicar para ativar e logo em seguida recarregando a página (F5) para que seja aplicado.
 
-⚙️ Como funciona?
+## ⚙️ **Como funciona?**
 
 O script utiliza XPath para localizar dinamicamente os dados de chamados.
 
@@ -40,24 +40,24 @@ Exibe pop-ups com informações detalhadas diretamente na tela.
 
 A verificação é feita a cada 60 segundos, garantindo acompanhamento em tempo real.
 
-📁 Estrutura do Projeto
+**## 📁 Estrutura do Projeto**
 ├── manifest.json
 ├── content.js
 ├── icon.png
 ├── popup.html
 └── README.md
 
-✅ Permissões requeridas
+**##✅ Permissões requeridas**
 activeTab
 storage
 notifications
 
 Acesso ao site onde os chamados são exibidos (via content_scripts)
 
-⚠️ Observações
+**##⚠️ Observações**
 Certifique-se de ativar as notificações do site onde a extensão será usada.
 
 Desenvolvido para uso interno. Adaptável para outras interfaces com ajustes no XPath.
 
-📄 Licença
+**##📄 Licença**
 Este projeto é de uso interno e não possui uma licença pública definida.
