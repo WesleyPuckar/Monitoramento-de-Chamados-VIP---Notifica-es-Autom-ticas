@@ -18,7 +18,7 @@ Esta extensão para Google Chrome monitora automaticamente uma interface web de 
 
 1. Baixe ou clone este repositório:
    ```bash
-   git clone https://github.com/seu-usuario/seu-repositorio.git
+   git clone https://github.com/WesleyPuckar/Monitoramento-de-Chamados-VIP---Notifica-es-Autom-ticas.git
    
 2- Abra o Google Chrome e vá para chrome://extensions
 
@@ -27,9 +27,11 @@ Esta extensão para Google Chrome monitora automaticamente uma interface web de 
 4- Clique em "Carregar sem compactação"
 
 5- Selecione a pasta onde está o manifest.json
+
  A extensão será adicionada as extensões do chrome, sendo necessário acessar o ícone dela e clicar para ativar e logo em seguida recarregando a página (F5) para que seja aplicado.
 
-⚙️ Como funciona
+⚙️ Como funciona?
+
 O script utiliza XPath para localizar dinamicamente os dados de chamados.
 
 Detecta automaticamente chamados com status ativo e identificados como VIP.
