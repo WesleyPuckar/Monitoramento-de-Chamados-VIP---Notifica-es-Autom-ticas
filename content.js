@@ -4,7 +4,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
     return;
   }
 
-  // Funções requestNotificationPermission e showNotification (sem alterações)
+  // Funções requestNotificationPermission e showNotification 
   const requestNotificationPermission = () => {
     if (Notification.permission === "default") {
       Notification.requestPermission().then((permission) => {
@@ -26,7 +26,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
 
   let activePopups = 0;
 
-  // --- FUNÇÃO DE POP-UP ATUALIZADA ---
+  
    function showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento) {
     // VERIFICAÇÃO: Se um pop-up para este chamado já existe na tela, não faz nada.
     const popupId = `vip-popup-${numeroChamado}`;
@@ -78,10 +78,10 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
         activePopups = Math.max(0, activePopups - 1);
     });
 
-    // --- LÓGICA DE CÓPIA ATUALIZADA COM TÍTULO H1 ---
+    
     popup.querySelector('.copiar').addEventListener('click', (e) => {
         try {
-            // Versão em HTML com tag <h1> para o título principal.
+            
             const htmlText = `<h1><strong>Chamado VIP Requer Atenção</strong></h1>
                               <p><strong>Número do Chamado:</strong> ${numeroChamado}</p>
                               <p><strong>Status:</strong> ${status}</p>
@@ -90,7 +90,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
                               <p><strong>Cidade:</strong> ${cidade}</p>
                               <p><strong>Tipo de Atendimento:</strong> ${tipoAtendimento}</p>`;
 
-            // Versão em texto puro (fallback) permanece a mesma.
+            
             const plainText = `Chamado VIP Requer Atenção
                                 Número do Chamado: ${numeroChamado}
                                 Status: ${status}
@@ -146,7 +146,6 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
         const vipCheckboxXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[11]`;
         const statusXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[5]`;
         const chamadoXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[2]`;
-        // ... (restante dos XPaths)
         const EmsXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[12]`;
         const designadoXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[7]`;
         const predioLotacaoXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[9]`;
@@ -168,7 +167,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
             if (isVIP) {
                 const status = statusElement.textContent.trim();
                 
-                // CONDIÇÃO SIMPLIFICADA: mostra o pop-up se o status não for um dos dois proibidos.
+                // CONDIÇÃO SIMPLIFICADA: mostra o pop-up se o status não for um dos dois proibidos ("Suspenso ou Usuário final pendente")
                 // A função showAlertPopup vai lidar com as duplicatas visuais.
                 if (status !== "Suspenso" && status !== "Usuário final pendente") {
                     const numeroChamado = chamadoElement.textContent.trim();
@@ -184,7 +183,6 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
     }
   }
 
-  // Loop principal (sem alterações)
   let sum = 0;
   let previousCount = 0;
   setInterval(() => {
