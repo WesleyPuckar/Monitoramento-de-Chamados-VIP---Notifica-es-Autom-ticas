@@ -34,6 +34,10 @@ Esta extensão para Google Chrome monitora automaticamente uma interface web de 
 
 O script utiliza XPath para localizar dinamicamente os dados de chamados.
 
+Orienta-se a utilizar as colunas da seguinte forma para evitar erros na extensão:
+<img width="1816" height="42" alt="image" src="https://github.com/user-attachments/assets/ecbfa481-9472-4ee3-888c-cf8d8e1e9870" />
+
+
 Detecta automaticamente chamados com status ativo e identificados como VIP.
 
 Exibe pop-ups com informações detalhadas diretamente na tela.
