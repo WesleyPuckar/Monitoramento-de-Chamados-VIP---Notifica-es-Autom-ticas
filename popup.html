@@ -1,14 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
+  <meta charset="UTF-8" />
+  <title>Monitoramento</title>
   <style>
-    body { font-family: Arial; padding: 10px; }
-    button { padding: 8px 12px; font-size: 14px; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #969696;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 120px;
+      width: 200px;
+      box-sizing: border-box;
+    }
+
+    h3 {
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #2c3e50;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
   </style>
 </head>
 <body>
   <h3>Monitoramento</h3>
   <button id="toggleButton">Ativar</button>
+
   <script src="popup.js"></script>
 </body>
 </html>
