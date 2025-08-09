@@ -1,6 +1,6 @@
 🛠️ Extensão de Monitoramento de Chamados VIP
 
-Esta extensão para Google Chrome monitora automaticamente uma interface web de chamados técnicos, detectando chamados classificados como **VIP** e exibindo **pop-ups visuais** com informações importantes em tempo real.
+Esta extensão para Google Chrome monitora automaticamente uma interface web de chamados técnicos, detectando chamados classificados como **VIP** e exibindo **pop-ups visuais** com informações importantes em tempo real para melhor atendimento e cumprimento de metas de SLA.
 
 ## 📌 Funcionalidades
 
@@ -43,6 +43,8 @@ Detecta automaticamente chamados com status ativo e identificados como VIP.
 Exibe pop-ups com informações detalhadas diretamente na tela.
 
 A verificação é feita a cada 60 segundos, garantindo acompanhamento em tempo real.
+
+Atenção: O Script irá notificar somente chamados Vips que estiverem com status diferente de (Suspenso ou Usuário final pendente) já que em nenhum desses status é contado o SLA
 
 ## 📁 **Estrutura do Projeto**
 ├── manifest.json
