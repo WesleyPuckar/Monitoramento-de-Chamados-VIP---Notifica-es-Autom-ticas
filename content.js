@@ -4,7 +4,6 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
     return;
   }
 
-  // Funções requestNotificationPermission e showNotification 
   const requestNotificationPermission = () => {
     if (Notification.permission === "default") {
       Notification.requestPermission().then((permission) => {
@@ -25,14 +24,25 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
   requestNotificationPermission();
 
   let activePopups = 0;
+  let alertHistory = {}; // Histórico de alertas
 
-  
-   function showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento) {
-    // VERIFICAÇÃO: Se um pop-up para este chamado já existe na tela, não faz nada.
-    const popupId = `vip-popup-${numeroChamado}`;
-    if (document.getElementById(popupId)) {
-        return;
+  function canNotify(numeroChamado, status) {
+    const agora = Date.now();
+
+    if (status === "Suspenso" || status === "Usuário final pendente") {
+        const ultimoAlerta = alertHistory[numeroChamado] || 0;
+        if (agora - ultimoAlerta < 300000) { // 5 minutos
+            return false;
+        }
     }
+
+    alertHistory[numeroChamado] = agora;
+    return true;
+  }
+
+  function showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento, suspenso = false) {
+    const popupId = `vip-popup-${numeroChamado}`;
+    if (document.getElementById(popupId)) return;
 
     const popup = document.createElement('div');
     popup.id = popupId;
@@ -44,17 +54,24 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
     popup.style.top = '20px';
     popup.style.right = `${20 + popupOffset}px`;
     popup.style.width = `${popupWidth}px`;
-    popup.style.backgroundColor = '#ffeb3b';
     popup.style.padding = '15px';
     popup.style.borderRadius = '5px';
     popup.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
     popup.style.zIndex = '9999';
-    popup.style.borderLeft = '5px solid #ffc107';
 
+    if (suspenso) {
+        popup.style.backgroundColor = '#bbdefb';
+        popup.style.borderLeft = '5px solid #2196f3';
+    } else {
+        popup.style.backgroundColor = '#ffeb3b';
+        popup.style.borderLeft = '5px solid #ffc107';
+    }
+
+    const titulo = suspenso ? "Chamado VIP" : "Chamado VIP Requer Atenção";
     const linkChamado = `https://suporte.tjsp.jus.br/saw/Request/${numeroChamado}`;
 
     popup.innerHTML = `
-      <h3 style="margin-top: 0; color: #333;">Chamado VIP Requer Atenção</h3>
+      <h3 style="margin-top: 0; color: #333;">${titulo}</h3>
       <p><strong>Número do Chamado:</strong> ${numeroChamado}</p>
       <p><strong>Status:</strong> ${status}</p>
       <p><strong>Data de Criação:</strong> ${Ems}</p>
@@ -62,7 +79,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
       <p><strong>Cidade:</strong> ${cidade}</p>
       <p><strong>Tipo de Atendimento:</strong> ${tipoAtendimento}</p>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-        <button class="fechar" style="padding: 8px 12px; background: #ffc107; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">Fechar</button>
+        <button class="fechar" style="padding: 8px 12px; background: #ccc; border: none; border-radius: 3px; cursor: pointer; font-weight: bold;">Fechar</button>
         <div>
           <button class="copiar" title="Copiar Informações" style="padding: 8px 12px; background: #4caf50; color: #fff; border: none; border-radius: 3px; cursor: pointer; font-size: 16px; margin-left: 5px;">📋</button>
           <button class="abrir" title="Abrir Chamado" style="padding: 8px 12px; background: #2196f3; color: #fff; border: none; border-radius: 3px; cursor: pointer; font-size: 16px; margin-left: 5px;">🔗</button>
@@ -78,20 +95,9 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
         activePopups = Math.max(0, activePopups - 1);
     });
 
-    
     popup.querySelector('.copiar').addEventListener('click', (e) => {
         try {
-            
-            const htmlText = `<h1><strong>Chamado VIP Requer Atenção</strong></h1>
-                              <p><strong>Número do Chamado:</strong> ${numeroChamado}</p>
-                              <p><strong>Status:</strong> ${status}</p>
-                              <p><strong>Data de Criação:</strong> ${Ems}</p>
-                              <p><strong>Designado:</strong> ${designado}</p>
-                              <p><strong>Cidade:</strong> ${cidade}</p>
-                              <p><strong>Tipo de Atendimento:</strong> ${tipoAtendimento}</p>`;
-
-            
-            const plainText = `Chamado VIP Requer Atenção
+            const plainText = `${titulo}
                                 Número do Chamado: ${numeroChamado}
                                 Status: ${status}
                                 Data de Criação: ${Ems}
@@ -100,7 +106,6 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
                                 Tipo de Atendimento: ${tipoAtendimento}`;
 
             const clipboardItem = new ClipboardItem({
-                "text/html": new Blob([htmlText], { type: "text/html" }),
                 "text/plain": new Blob([plainText], { type: "text/plain" }),
             });
 
@@ -108,9 +113,8 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
                 e.target.textContent = '✅';
                 setTimeout(() => { e.target.textContent = '📋'; }, 1500);
             });
-
         } catch (err) {
-            console.error('Erro ao copiar Rich Text:', err);
+            console.error('Erro ao copiar:', err);
             alert('Erro ao copiar informações.');
         }
     });
@@ -125,7 +129,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
             activePopups = Math.max(0, activePopups - 1);
         }
     }, 20000);
-}
+  }
 
   function checkVIPAndStatus() {
     function extractCidade(texto) {
@@ -143,13 +147,13 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
     const rows = document.evaluate(rowsXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     
     for (let i = 1; i <= rows.snapshotLength; i++) {
-        const vipCheckboxXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[11]`;
-        const statusXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[5]`;
-        const chamadoXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[2]`;
-        const EmsXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[12]`;
-        const designadoXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[7]`;
-        const predioLotacaoXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[9]`;
-        const tipoAtendimentoXPath = `//*[@id="mainView"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[10]`;
+        const vipCheckboxXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[11]`;
+        const statusXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[5]`;
+        const chamadoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[2]`;
+        const EmsXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[12]`;
+        const designadoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[7]`;
+        const predioLotacaoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[9]`;
+        const tipoAtendimentoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[10]`;
         
         const vipElement = document.evaluate(vipCheckboxXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
         const statusElement = document.evaluate(statusXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
@@ -160,22 +164,43 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
         const tipoAtendimentoElement = document.evaluate(tipoAtendimentoXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 
         if (vipElement && statusElement && chamadoElement && EmsElement) {
-            const isVIP = vipElement.querySelector('input[type="checkbox"]')?.checked ||
+            const isVIP = vipElement.querySelector('input[type=\"checkbox\"]')?.checked ||
                           vipElement.getAttribute('aria-checked') === 'true' ||
                           vipElement.classList.contains('checked');
 
             if (isVIP) {
                 const status = statusElement.textContent.trim();
-                
-                // CONDIÇÃO SIMPLIFICADA: mostra o pop-up se o status não for um dos dois proibidos ("Suspenso ou Usuário final pendente")
-                // A função showAlertPopup vai lidar com as duplicatas visuais.
-                if (status !== "Suspenso" && status !== "Usuário final pendente") {
+
+                if (status === "Suspenso") {
                     const numeroChamado = chamadoElement.textContent.trim();
                     const Ems = EmsElement.textContent.trim();
                     const designado = designadoElement?.textContent.trim() || "Fila";
                     const predio = predioLotacaoElement?.textContent.trim() || "";
                     const cidade = extractCidade(predio);
                     const tipoAtendimento = tipoAtendimentoElement?.textContent.trim() || "Tipo não informado";
+
+                    if (canNotify(numeroChamado, status)) {
+                        showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento, true);
+                    }
+                } else if (status === "Usuário final pendente") {
+                    const numeroChamado = chamadoElement.textContent.trim();
+                    const Ems = EmsElement.textContent.trim();
+                    const designado = designadoElement?.textContent.trim() || "Fila";
+                    const predio = predioLotacaoElement?.textContent.trim() || "";
+                    const cidade = extractCidade(predio);
+                    const tipoAtendimento = tipoAtendimentoElement?.textContent.trim() || "Tipo não informado";
+
+                    if (canNotify(numeroChamado, status)) {
+                        showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento, true);
+                    }
+                } else {
+                    const numeroChamado = chamadoElement.textContent.trim();
+                    const Ems = EmsElement.textContent.trim();
+                    const designado = designadoElement?.textContent.trim() || "Fila";
+                    const predio = predioLotacaoElement?.textContent.trim() || "";
+                    const cidade = extractCidade(predio);
+                    const tipoAtendimento = tipoAtendimentoElement?.textContent.trim() || "Tipo não informado";
+
                     showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento);
                 }
             }
