@@ -24,7 +24,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
   requestNotificationPermission();
 
   let activePopups = 0;
-  let alertHistory = {}; // Histórico de alertas
+  let alertHistory = {}; 
 
   function canNotify(numeroChamado, status) {
     const agora = Date.now();
@@ -95,9 +95,19 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
         activePopups = Math.max(0, activePopups - 1);
     });
 
-    popup.querySelector('.copiar').addEventListener('click', (e) => {
+        popup.querySelector('.copiar').addEventListener('click', (e) => {
         try {
-            const plainText = `${titulo}
+            
+            const htmlText = `<h1><strong>Chamado VIP Requer Atenção</strong></h1>
+                              <p><strong>Número do Chamado:</strong> ${numeroChamado}</p>
+                              <p><strong>Status:</strong> ${status}</p>
+                              <p><strong>Data de Criação:</strong> ${Ems}</p>
+                              <p><strong>Designado:</strong> ${designado}</p>
+                              <p><strong>Cidade:</strong> ${cidade}</p>
+                              <p><strong>Tipo de Atendimento:</strong> ${tipoAtendimento}</p>`;
+
+            
+            const plainText = `Chamado VIP Requer Atenção
                                 Número do Chamado: ${numeroChamado}
                                 Status: ${status}
                                 Data de Criação: ${Ems}
@@ -106,6 +116,7 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
                                 Tipo de Atendimento: ${tipoAtendimento}`;
 
             const clipboardItem = new ClipboardItem({
+                "text/html": new Blob([htmlText], { type: "text/html" }),
                 "text/plain": new Blob([plainText], { type: "text/plain" }),
             });
 
