@@ -46,6 +46,13 @@ A verificação é feita a cada 60 segundos, garantindo acompanhamento em tempo 
 
 Atenção: O Script irá notificar somente chamados Vips que estiverem com status diferente de (Suspenso ou Usuário final pendente) já que em nenhum desses status é contado o SLA
 
+Com a nova atualização do código foi adicionado um novo pop-up com a cor azul notificando assim os chamados com status (Suspenso e Usuário final pendente) como um lembrete, caso seja a primeira vez do chamado na fila com esse status o mesmo será exibido na hora, nas demais vezes somente a cada 5 minutos ele aparecerá como um lembrete evitando assim a poluição Visual
+
+## 🖼️ Exemplo de Notificação de lembrete do VIP
+
+<img width="255" height="229" alt="image" src="https://github.com/user-attachments/assets/92a0b2aa-775f-406a-8879-5f57dac2e5bf" />
+
+
 ## 📁 **Estrutura do Projeto**
 ├── manifest.json
 
