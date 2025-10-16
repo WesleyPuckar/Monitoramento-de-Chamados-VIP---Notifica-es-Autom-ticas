@@ -9,11 +9,11 @@
     "scripting"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://suporte.tjsp.jus.br/*"
   ],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://suporte.tjsp.jus.br/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }

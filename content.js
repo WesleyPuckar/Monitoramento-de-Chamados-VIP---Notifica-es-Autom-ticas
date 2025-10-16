@@ -1,8 +1,11 @@
-chrome.storage.local.get("monitoramentoAtivo", (data) => {
+chrome.storage.local.get(['monitoramentoAtivo', 'refreshInterval'], (data) => {
   if (!data.monitoramentoAtivo) {
     console.log("Monitoramento desativado.");
+    chrome.storage.local.set({ nextRefreshTime: null });
     return;
   }
+
+  const REFRESH_INTERVAL_MS = (data.refreshInterval || 60) * 1000;
 
   const requestNotificationPermission = () => {
     if (Notification.permission === "default") {
@@ -28,14 +31,12 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
 
   function canNotify(numeroChamado, status) {
     const agora = Date.now();
-
     if (status === "Suspenso" || status === "Usuário final pendente") {
         const ultimoAlerta = alertHistory[numeroChamado] || 0;
         if (agora - ultimoAlerta < 300000) { // 5 minutos
             return false;
         }
     }
-
     alertHistory[numeroChamado] = agora;
     return true;
   }
@@ -95,31 +96,11 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
         activePopups = Math.max(0, activePopups - 1);
     });
 
-        popup.querySelector('.copiar').addEventListener('click', (e) => {
+    popup.querySelector('.copiar').addEventListener('click', (e) => {
         try {
-            
-            const htmlText = `<h1><strong>Chamado VIP Requer Atenção</strong></h1>
-                              <p><strong>Número do Chamado:</strong> ${numeroChamado}</p>
-                              <p><strong>Status:</strong> ${status}</p>
-                              <p><strong>Data de Criação:</strong> ${Ems}</p>
-                              <p><strong>Designado:</strong> ${designado}</p>
-                              <p><strong>Cidade:</strong> ${cidade}</p>
-                              <p><strong>Tipo de Atendimento:</strong> ${tipoAtendimento}</p>`;
-
-            
-            const plainText = `Chamado VIP Requer Atenção
-                                Número do Chamado: ${numeroChamado}
-                                Status: ${status}
-                                Data de Criação: ${Ems}
-                                Designado: ${designado}
-                                Cidade: ${cidade}
-                                Tipo de Atendimento: ${tipoAtendimento}`;
-
-            const clipboardItem = new ClipboardItem({
-                "text/html": new Blob([htmlText], { type: "text/html" }),
-                "text/plain": new Blob([plainText], { type: "text/plain" }),
-            });
-
+            const htmlText = `<h1><strong>Chamado VIP Requer Atenção</strong></h1><p><strong>Número do Chamado:</strong> ${numeroChamado}</p><p><strong>Status:</strong> ${status}</p><p><strong>Data de Criação:</strong> ${Ems}</p><p><strong>Designado:</strong> ${designado}</p><p><strong>Cidade:</strong> ${cidade}</p><p><strong>Tipo de Atendimento:</strong> ${tipoAtendimento}</p>`;
+            const plainText = `Chamado VIP Requer Atenção\nNúmero do Chamado: ${numeroChamado}\nStatus: ${status}\nData de Criação: ${Ems}\nDesignado: ${designado}\nCidade: ${cidade}\nTipo de Atendimento: ${tipoAtendimento}`;
+            const clipboardItem = new ClipboardItem({"text/html": new Blob([htmlText], { type: "text/html" }), "text/plain": new Blob([plainText], { type: "text/plain" })});
             navigator.clipboard.write([clipboardItem]).then(() => {
                 e.target.textContent = '✅';
                 setTimeout(() => { e.target.textContent = '📋'; }, 1500);
@@ -146,82 +127,54 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
     function extractCidade(texto) {
         if (!texto) return "Cidade não identificada";
         const cidadeBruta = texto.split(/[-/|(]/)[0].trim();
-        const cidadeFormatada = cidadeBruta
-            .toLowerCase()
-            .split(" ")
-            .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1))
-            .join(" ");
-        return cidadeFormatada;
+        return cidadeBruta.toLowerCase().split(" ").map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1)).join(" ");
     }
 
-    const rowsXPath = "//*[@id='mainView']/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div";
-    const rows = document.evaluate(rowsXPath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    
-    for (let i = 1; i <= rows.snapshotLength; i++) {
-        const vipCheckboxXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[11]`;
-        const statusXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[5]`;
-        const chamadoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[2]`;
-        const EmsXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[12]`;
-        const designadoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[7]`;
-        const predioLotacaoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[9]`;
-        const tipoAtendimentoXPath = `//*[@id=\"mainView\"]/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[2]/div[7]/div/div[${i}]/div[10]`;
-        
-        const vipElement = document.evaluate(vipCheckboxXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        const statusElement = document.evaluate(statusXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        const chamadoElement = document.evaluate(chamadoXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        const EmsElement = document.evaluate(EmsXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        const designadoElement = document.evaluate(designadoXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        const predioLotacaoElement = document.evaluate(predioLotacaoXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-        const tipoAtendimentoElement = document.evaluate(tipoAtendimentoXPath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    const SELECTORS = {
+        row: ".slick-row", numeroChamado: ".l1", status: ".l4",
+        designado: ".l6", predioLotacao: ".l8", tipoAtendimento: ".l9",
+        vipCheckbox: ".l10", dataCriacao: ".l11",
+    };
 
-        if (vipElement && statusElement && chamadoElement && EmsElement) {
-            const isVIP = vipElement.querySelector('input[type=\"checkbox\"]')?.checked ||
-                          vipElement.getAttribute('aria-checked') === 'true' ||
-                          vipElement.classList.contains('checked');
+    const allRows = document.querySelectorAll(SELECTORS.row);
 
-            if (isVIP) {
-                const status = statusElement.textContent.trim();
+    allRows.forEach(row => {
+        const vipElement = row.querySelector(SELECTORS.vipCheckbox);
+        const statusElement = row.querySelector(SELECTORS.status);
+        const chamadoElement = row.querySelector(SELECTORS.numeroChamado);
+        const emsElement = row.querySelector(SELECTORS.dataCriacao);
+        const designadoElement = row.querySelector(SELECTORS.designado);
+        const predioLotacaoElement = row.querySelector(SELECTORS.predioLotacao);
+        const tipoAtendimentoElement = row.querySelector(SELECTORS.tipoAtendimento);
 
-                if (status === "Suspenso") {
-                    const numeroChamado = chamadoElement.textContent.trim();
-                    const Ems = EmsElement.textContent.trim();
-                    const designado = designadoElement?.textContent.trim() || "Fila";
-                    const predio = predioLotacaoElement?.textContent.trim() || "";
-                    const cidade = extractCidade(predio);
-                    const tipoAtendimento = tipoAtendimentoElement?.textContent.trim() || "Tipo não informado";
+        if (!vipElement || !statusElement || !chamadoElement || !emsElement) return;
 
-                    if (canNotify(numeroChamado, status)) {
-                        showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento, true);
-                    }
-                } else if (status === "Usuário final pendente") {
-                    const numeroChamado = chamadoElement.textContent.trim();
-                    const Ems = EmsElement.textContent.trim();
-                    const designado = designadoElement?.textContent.trim() || "Fila";
-                    const predio = predioLotacaoElement?.textContent.trim() || "";
-                    const cidade = extractCidade(predio);
-                    const tipoAtendimento = tipoAtendimentoElement?.textContent.trim() || "Tipo não informado";
+        const isVIP = vipElement.querySelector('input[type="checkbox"][checked="checked"]') !== null;
 
-                    if (canNotify(numeroChamado, status)) {
-                        showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento, true);
-                    }
-                } else {
-                    const numeroChamado = chamadoElement.textContent.trim();
-                    const Ems = EmsElement.textContent.trim();
-                    const designado = designadoElement?.textContent.trim() || "Fila";
-                    const predio = predioLotacaoElement?.textContent.trim() || "";
-                    const cidade = extractCidade(predio);
-                    const tipoAtendimento = tipoAtendimentoElement?.textContent.trim() || "Tipo não informado";
+        if (isVIP) {
+            const status = statusElement.textContent.trim();
+            const numeroChamado = chamadoElement.textContent.trim();
+            const Ems = emsElement.textContent.trim();
+            const designado = designadoElement?.textContent.trim() || "Fila";
+            const predio = predioLotacaoElement?.textContent.trim() || "";
+            const cidade = extractCidade(predio);
+            const tipoAtendimento = tipoAtendimentoElement?.textContent.trim() || "Tipo não informado";
+            const isSuspendedOrPending = (status === "Suspenso" || status === "Usuário final pendente");
 
-                    showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento);
-                }
+            if (canNotify(numeroChamado, status)) {
+                showAlertPopup(numeroChamado, status, Ems, designado, cidade, tipoAtendimento, isSuspendedOrPending);
             }
         }
-    }
+    });
   }
 
   let sum = 0;
   let previousCount = 0;
+
   setInterval(() => {
+    const nextRefresh = Date.now() + REFRESH_INTERVAL_MS;
+    chrome.storage.local.set({ nextRefreshTime: nextRefresh });
+
     const localDate = new Date();
     const hours = localDate.getHours();
     const minutes = localDate.getMinutes();
@@ -232,11 +185,8 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
       botao.click();
       console.log(`Attempt: ${sum}\n${hours}:${minutes}`);
       sum += 1;
-    } else {
-      console.warn("404 - Botão não encontrado.");
-    }
 
-    setTimeout(() => {
+      setTimeout(() => {
         const xpathChamados = "//div[contains(@class, 'ui-widget-content')]";
         const chamados = document.evaluate(xpathChamados, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         const currentCount = chamados.snapshotLength;
@@ -248,6 +198,10 @@ chrome.storage.local.get("monitoramentoAtivo", (data) => {
         
         checkVIPAndStatus();
         previousCount = currentCount;
-    }, 2000);
-  }, 60000);
+      }, 2000);
+
+    } else {
+      console.warn("404 - Botão não encontrado.");
+    }
+  }, REFRESH_INTERVAL_MS);
 });
