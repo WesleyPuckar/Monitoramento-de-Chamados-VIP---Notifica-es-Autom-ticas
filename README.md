@@ -61,6 +61,30 @@ Ele utiliza seletores de classe CSS para localizar de forma eficiente as linhas 
 
 └── README.md        # Este arquivo
 
+### 📋 Configuração Obrigatória da Grid
+
+Para que a extensão leia os dados corretamente, a **ordem das colunas** na sua visualização de chamados deve seguir estritamente o padrão abaixo, pois o script baseia-se na posição (index) dos elementos:
+
+<img width="1835" height="41" alt="image" src="https://github.com/user-attachments/assets/8045289e-6a37-4234-af55-2e79232c84ee" />
+
+| Posição | Coluna Necessária | Observação |
+| :--- | :--- | :--- |
+| **1ª** | **Número do Chamado** | Identificador único |
+| 2ª | *(Livre)* | Pode ser qualquer dado |
+| 3ª | *(Livre)* | Pode ser qualquer dado |
+| **4ª** | **Status** | Ex: Aberto, Suspenso, etc. |
+| 5ª | *(Livre)* | Pode ser qualquer dado |
+| **6ª** | **Designado** | Técnico ou Fila responsável |
+| 7ª | *(Livre)* | Pode ser qualquer dado |
+| **8ª** | **Prédio / Lotação** | Usado para identificar a Cidade |
+| **9ª** | **Tipo de Atendimento** | Classificação do chamado |
+| **10ª** | **VIP (Indicador)** | **Essencial:** Checkbox que define se é VIP |
+| **11ª** | **Data de Criação** | Data/Hora de abertura |
+
+⚠️ **Atenção:** Se a coluna "VIP" não estiver exatamente na **10ª posição**, a extensão não detectará os chamados prioritários.
+
+
+
 ## ✅ Permissões Requeridas
 
 -   **notifications**: Para exibir as notificações de novos chamados.
