@@ -178,7 +178,7 @@ chrome.storage.local.get(['monitoramentoAtivo', 'refreshInterval'], (data) => {
     const localDate = new Date();
     const hours = localDate.getHours();
     const minutes = localDate.getMinutes();
-    const xpathBotao = "//*[@id='mainView']/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[1]/div/span[3]/span/span/button";
+    const xpathBotao = "//*[@id='mainView']/div/div[2]/saw-grid-container/div/pl-grid-container/div/div[3]/div[3]/div[1]/div/div/span[3]/span/span/button/span/span";
     const botao = document.evaluate(xpathBotao, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 
     if (botao) {
